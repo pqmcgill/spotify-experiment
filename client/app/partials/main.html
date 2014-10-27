@@ -1,0 +1,55 @@
+<div ng-include="'client/app/partials/navbar.html'"></div>
+
+<header class="hero-unit" id="banner">
+  <div class="container">
+    <h1>Welcome to the party, {{userName}}!</h1>
+    <p class="lead">Your music taste is welcome here</p>
+  </div>
+</header>
+
+<div class="container">
+  <div class="row">
+    <div class="col-lg-12">
+      <h1 class="page-header">Features:</h1>
+      <ul class="nav nav-tabs nav-stacked col-md-4 col-lg-4 col-sm-6" ng-repeat="thing in awesomeThings">
+        <li><a href="#" tooltip="{{thing.info}}">{{thing.name}}</a></li>
+      </ul>
+      
+      <a class="btn btn-primary" ng-click="pauseResume()">pause/resume</a>
+      <a class="btn btn-warning" ng-click="stopTrack()">Stop!</a>
+      <input type="text" ng-model="query" ng-change="search()">
+      <!-- <a class="btn btn-primary" ng-click="login()">Login</a> -->
+      <label>
+        <input type="radio" name="searchType" value="track" ng-model="searchType" ng-change="searchData ? search() : break">
+        By Song
+      </label>
+       <label>
+        <input type="radio" name="searchType" value="album" ng-model="searchType" ng-change="searchData ? search() : break">
+        By Album
+      </label>
+      <label>
+        <input type="radio" name="searchType" value="artist" ng-model="searchType" ng-change="searchData ? search() : break">
+        By Artist
+      </label>
+     <!--  <a class="btn btn-primary" ng-click="searchByArtist()">Search!</a> -->
+
+
+      <table>
+        <tr ng-repeat="track in searchData.tracks.items">
+          <td><img src="{{track.album.images[2].url}}" height="64" width="64"></td>
+          <td>{{track.name}} | {{track.artists[0].name}} | {{track.album.name}}</td>
+          <td><a class="btn btn-primary" ng-click="addTrack(track.uri)"><i class="fa fa-plus"></i></a>
+        </tr>
+      </table>
+
+    </div>
+  </div>
+</div>
+
+<footer class="footer">
+  <div class="container">
+      <p>Spotify Exeriment v1.0 |
+        Patrick McGill |
+         <a href="https://github.com/DaftMonk/generator-angular-fullstack/issues?state=open">Issues</a></p>
+  </div>
+</footer>
