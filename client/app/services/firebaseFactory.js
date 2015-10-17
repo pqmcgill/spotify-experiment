@@ -8,7 +8,7 @@ angular.module('spotifyExperimentApp')
 
 			// performs the logout function, and deletes the user from the db
 			logout: function(callback) {
-				var fb = new Firebase('https://myspotifyapp.firebaseio.com/' + $rootScope.userName);
+				var fb = new Firebase('https://myspotifyapp.firebaseio.com/partiers/' + $rootScope.userName);
 				fb.remove();
 				callback();
 			}

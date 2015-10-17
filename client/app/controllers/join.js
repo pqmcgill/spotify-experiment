@@ -9,7 +9,7 @@ angular.module('spotifyExperimentApp')
 		}
 
 		$scope.joinParty = function() {
-			var fb = new Firebase('https://myspotifyapp.firebaseio.com/');
+			var fb = new Firebase('https://myspotifyapp.firebaseio.com/partiers');
 			var playlist = {tracks: ["empty"]};
 			var data = {};
 			data[$scope.signupName] = playlist;

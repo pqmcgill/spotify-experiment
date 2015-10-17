@@ -14,10 +14,13 @@
       <ul class="nav nav-tabs nav-stacked col-md-4 col-lg-4 col-sm-6" ng-repeat="thing in awesomeThings">
         <li><a href="#" tooltip="{{thing.info}}">{{thing.name}}</a></li>
       </ul>
-      
+      <a class="btn btn-default" ng-click="logout()">Logout</a>
       <a class="btn btn-primary" ng-click="pauseResume()">pause/resume</a>
       <a class="btn btn-warning" ng-click="stopTrack()">Stop!</a>
+      <a class="btn btn-warning" ng-click="vetoTrack()">Veto</a>
       <input type="text" ng-model="query" ng-change="search()">
+
+      <img src="{{currentTrack.album.images[0].url}}" height="640" width="640" />
       <!-- <a class="btn btn-primary" ng-click="login()">Login</a> -->
       <label>
         <input type="radio" name="searchType" value="track" ng-model="searchType" ng-change="searchData ? search() : break">
@@ -38,7 +41,7 @@
         <tr ng-repeat="track in searchData.tracks.items">
           <td><img src="{{track.album.images[2].url}}" height="64" width="64"></td>
           <td>{{track.name}} | {{track.artists[0].name}} | {{track.album.name}}</td>
-          <td><a class="btn btn-primary" ng-click="addTrack(track.uri)"><i class="fa fa-plus"></i></a>
+          <td><a class="btn btn-primary" ng-click="addTrack(track.id)"><i class="fa fa-plus"></i></a>
         </tr>
       </table>
 

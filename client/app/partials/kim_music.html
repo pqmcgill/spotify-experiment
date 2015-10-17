@@ -1,0 +1,65 @@
+<div class="tabs tabs-style-linemove">
+	<nav>
+		<ul>
+			<li ng-click="hideMe = false" ng-class="{true: '', false: 'tab-current'}[hideMe]" class="tab-current">
+				<a class="icon icon-home"><span>Search</span></a>
+			</li>
+			<li ng-click="hideMe = true" ng-class="{true: 'tab-current', false: ''}[hideMe]">
+				<a class="icon icon-box"><span>Playing</span></a>
+			</li>
+		</ul>
+	</nav>
+</div>
+
+<div class="search-section" ng-hide="hideMe">
+	<div class="input-group">
+		<span class="input-group-addon search-addon"><i class="fa fa-search"></i></span>
+		<input type="text" class="search" ng-model="query" ng-change="search()"/>
+	</div>
+
+	<div class="radio-btns">
+		<input type="radio" id="title" checked name="searchType" value="track" ng-model="searchType" ng-change="searchData ? search() : break">
+		<label class="fa fa-" for="title">
+			<p class="label">by title</p>
+		</label>
+		<input type="radio" id="artist" name="searchType" value="artist" ng-model="searchType" ng-change="searchData ? search() : break">
+		<label class="fa fa-" for="artist">
+			<p class="label">by artist</p>
+		</label>
+		<input type="radio" id="album" name="searchType" value="album" ng-model="searchType" ng-change="searchData ? search() : break">
+		<label class="fa fa-" for="album">
+			<p class="label">by album</p>
+		</label>
+	</div>
+
+	<div class="search-results">
+		<div class="row" ng-repeat="track in searchData.tracks.items" ng-click="addTrack(track.id, $index)">
+			<div class="col-xs-3"><img ng-src="{{track.album.images[2].url}}" alt="{{track.album.name}}"></div>
+
+			<div class="col-xs-7 no-padding">
+				<p class="title">{{track.name}}</p>
+				<p class="artist-album">
+					<span class="artist">{{track.artists.name}} </span>&#149;
+					<span class="album"> {{track.album.name}}</span>
+				</p>
+			</div>
+			
+			<div class="col-xs-1" ><i ng-class="{true: 'fa fa-check', false: 'fa fa-plus'}[track.added]"></i></div>
+		</div>
+	</div>
+</div>
+
+<div class="playing-section" ng-show="hideMe">
+	<img ng-src="{{currentTrack.album.images[0].url}}" alt="{{currentTrack.album.name}}">
+	<a class="btn vote" ng-class="{true: 'activated', false: ''}[activated]" ng-click="vote()">{{voteText}}</a>
+
+	<p class="play-pause" ng-if="adminSignedIn"><i class="fa" ng-class="{true: 'fa-pause', false: 'fa-play'}[isPlaying]" ng-click="playPause()"></i></p>
+	
+	<p class="title">{{currentTrack.name}}</p>
+	<p class="artist-album">
+		<span class="artist">{{currentTrack.artists[0].name}} </span>&#149;
+		<span class="album"> {{currentTrack.album.name}}</span>
+	</p>
+
+	<p class="username">Chosen by {{chosenBy}}</p>
+</div>

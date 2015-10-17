@@ -8,10 +8,9 @@ var Firebase = require('firebase');
 var btoa = require('btoa');
 var atob = require('atob');
 var async = require('async');
-var spotify = require('node-spotify-0.6.0-OSX/spotify.js')(options);
+var spotify = require('node-spotify/build/release/spotify')(options);
 
 var request = require('request');
-
 
 
 // function for performing action after the spotify object is ready
@@ -21,49 +20,56 @@ var ready = function() {
 	djAsync();
 };
 
+var isPlaying;
 var iterator = 0;
+var userTurn;
 // asyncronous loop DJ
 var djAsync = function() {
-	var isPlaying = false;
+	isPlaying = false;
 	
 	async.whilst(
 		function() { return !isPlaying; },
 		function(callback) {
-			var ref = new Firebase('https://myspotifyapp.firebaseio.com/');
+			console.log('hello world');
+			var ref = new Firebase('https://myspotifyapp.firebaseio.com/partiers/');
 			ref.once('value', function(data) {
-				var keys = Object.keys(data.val());
-				if(keys.length > 0) {
-					if (iterator === keys.length) {
-						iterator = 0;
-					}
-					console.log(keys[iterator]);
+				if (data.val()) {
+					var keys = Object.keys(data.val());
+					if(keys.length > 0) {
+						if (iterator === keys.length) {
+							iterator = 0;
+						}
+						console.log(keys[iterator]);
+						userTurn = keys[iterator];
 
-					if (data.val()[keys[iterator]].tracks[0] !== 'empty') {
-						console.log(data.val()[keys[iterator]].tracks[0]);
-						var track = data.val()[keys[iterator]].tracks[0];
-						var tracks = data.val()[keys[iterator]].tracks;
-						
-						// play track
-						isPlaying = true;
-						play(track);
+						if (data.val()[keys[iterator]].tracks[0] !== 'empty') {
+							console.log(data.val()[keys[iterator]].tracks[0]);
+							var track = data.val()[keys[iterator]].tracks[0];
+							var tracks = data.val()[keys[iterator]].tracks;
+							
+							// play track
+							isPlaying = true;
+							play(track);
 
-						// check for last track in list
-						if (tracks.length === 1) {
-							tracks[0] = 'empty';
-						} else {
-							tracks.shift();
-							console.log(tracks);
+							// check for last track in list
+							if (tracks.length === 1) {
+								tracks[0] = 'empty';
+							} else {
+								console.log('foo');
+								tracks.shift();
+								console.log(tracks);
+							}
+
+							//update db
+							var ref2 = new Firebase('https://myspotifyapp.firebaseio.com/partiers/' + keys[iterator] + '/tracks');
+							ref2.set(tracks);
 						}
 
-						//update db
-						var ref2 = new Firebase('https://myspotifyapp.firebaseio.com/' + keys[iterator] + '/tracks');
-						ref2.set(tracks);
+						iterator++;
+						
 					}
-
-					iterator++;
-					
 				}
-				setTimeout(callback, 0);
+				setTimeout(callback, 1000);
 			});
 		},
 		function(err) {
@@ -130,16 +136,99 @@ function buildPlaylist() {
 	
 }
 
-function play(trackLink) {
+function resetVetoCount() {
+	var fb = new Firebase('https://myspotifyapp.firebaseio.com/currentTrack/vetoCount');
+	fb.set(0);
+}
+
+function updateCurrentTrackValues(currentSecond, trackId, duration, vetoCount, chosenBy, callback) {
+	var fbCurrentTrack = new Firebase('https://myspotifyapp.firebaseio.com/currentTrack/');
+	
+	fbCurrentTrack.once('value', function(snapshot) {
+		var data = snapshot.val();
+		if (currentSecond) { data.currentSecond = currentSecond; }
+		if (trackId) { data.trackId = trackId; }
+		if (chosenBy) { data.chosenBy = chosenBy; }
+		if (duration) { data.duration = duration; }
+		
+		fbCurrentTrack.update(data, function(success) {
+			callback();
+		});
+	});
+}
+
+var playTimer;
+
+function startPlayTimer(theCurrentTrack) {
+	console.log(theCurrentTrack.name);
+	async.whilst(
+		function() { return playTimer; },
+		function(callback){
+			updateCurrentTrackValues(spotify.player.currentSecond, null, null, null, null, function() {
+				setTimeout(callback, 200);
+			});
+		},
+		function(err) {
+			console.log('timer stopped');
+		} 
+	)
+}
+
+
+function play(trackId) {
+
 	spotify.player.on({
 		endOfTrack: function() {
-			console.log('only once');
-			djAsync();
+			skipTrack();
 		}
 	});
-	var track = spotify.createFromLink(trackLink);
+	var track = spotify.createFromLink('spotify:track:' + trackId);
 	spotify.player.play(track);
+	isPlaying = true;
+	updateCurrentTrackValues(0, trackId, track.duration, 0, userTurn, function() {
+		playTimer = true;
+		startPlayTimer(trackId);
+	});
+
 }
+
+var fbVetoCount = new Firebase('https://myspotifyapp.firebaseio.com/currentTrack/vetoCount');
+
+fbVetoCount.on('value', function(snapshot) {
+	var data = snapshot.val();
+	if (data !== 0) {
+		var fb = new Firebase('https://myspotifyapp.firebaseio.com/');
+		fb.once('value', function(snpsht) {
+			var partiers = snpsht.val().partiers;
+			if (Object.keys(partiers).length / 2 < data) {
+				skipTrack();
+			}
+		});
+	}
+});
+
+function resetCurrentTrack(callback) {
+	var thisFb = new Firebase('https://myspotifyapp.firebaseio.com/currentTrack');
+	thisFb.set({
+		currentSecond: 0,
+		vetoCount: 0,
+		trackId: '',
+		duration: 0,
+		chosenBy: ''
+	}, function(complete) {
+		callback();
+	});
+
+}
+
+var skipTrack = function() {
+	spotify.player.stop();
+	playTimer = false;
+	isPlaying = false;
+	resetCurrentTrack(function() {
+		djAsync();
+	});
+};
 
 
 
@@ -153,6 +242,7 @@ exports.playTrack = function(req, res) {
 
 exports.pauseTrack = function(req, res) {
 	spotify.player.pause();
+
 	res.send(200);
 };
 
@@ -162,7 +252,7 @@ exports.resumeTrack = function(req, res) {
 };
 
 exports.stopTrack = function(req, res) {
-	spotify.player.stop();
+	skipTrack();
 	res.send(200);
 };
 

@@ -5,17 +5,17 @@ angular.module('spotifyExperimentApp')
     $stateProvider
     	.state('mainAuth', {
       	url: '/?code',
-      	templateUrl: 'app/partials/join.html',
+      	templateUrl: 'app/partials/kim_main.html',
       	controller: 'JoinCtrl'
       })
       .state('join', {
         url: '/',
-        templateUrl: 'app/partials/join.html',
+        templateUrl: 'app/partials/kim_main.html',
         controller: 'JoinCtrl'
       })
       .state('main', {
         url: '/main',
-        templateUrl: 'app/partials/main.html',
+        templateUrl: 'app/partials/kim_music.html',
         controller: 'MainCtrl'
       })
       .state('callback', {

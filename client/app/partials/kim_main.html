@@ -1,0 +1,21 @@
+<div class="login" ng-hide="hideMe">
+	<div class="inputs">
+		<p class="label">choose your display name</p>
+		<input ng-model="signupName" type="text"/>
+		<a ng-disabled="!signupName || signupName === ''" ng-click="joinParty()" class="btn main">join the party</a>
+	</div>
+
+	<a ng-click="hideMe = !hideMe" class="link">Party Master Portal</a>
+</div>
+
+<div class="login master" ng-show="hideMe">
+	<div class="inputs">
+		<p class="label">username</p>
+		<input type="text"/>
+		<p class="label">password</p>
+		<input type="text"/>
+		<a href="#/music" class="btn main">start the party</a>
+	</div>
+
+	<a ng-click="hideMe = !hideMe" class="link short">Party Login</a>
+</div>
